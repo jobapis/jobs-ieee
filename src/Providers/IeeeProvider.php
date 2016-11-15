@@ -14,23 +14,30 @@ class IeeeProvider extends AbstractProvider
     public function createJobObject($payload)
     {
         $job = new Job([
-            'title' => $payload['title'],
-            'name' => $payload['title'],
-            'description' => $payload['description'],
-            'url' => $payload['link'],
+            'title' => $payload['JobTitle'],
+            'name' => $payload['JobTitle'],
+            'description' => $payload['Description'],
+            'url' => $payload['Url'],
+            'maximumSalary' => $payload['SalaryMax'],
+            'sourceId' => $payload['Id'],
+            'alternateName' => $payload['NormalizedJobTitle'],
         ]);
 
-        $job->setDatePostedAsString($payload['pubDate']);
+        $job->setDatePostedAsString($payload['PostDate'])
+            ->setMinimumSalary($payload['SalaryMin'])
+            ->setLocation($payload['FormattedCityState'])
+            ->setCompany($payload['Company'])
+            ->setCompanyDescription($payload['CompanyProfileDescription'])
+            ->setCompanyEmail($payload['ApplyEmail'])
+            ->setCompanyLogo($payload['CompanyLogo'])
+            ->setCompanyUrl($payload['CompanyProfileUrl'])
+            ->setCountry($payload['Country'])
+            ->setCity($payload['City'])
+            ->setState($payload['State'])
+            ->setPostalCode($payload['Zip']);
 
-        // Set a location if it was set in the query
-        if ($this->query && $this->query->get('l')) {
-            $job->setLocation($this->query->get('l'));
-        }
-
-        // Set a company if it was set in the query
-        if ($this->query && $this->query->get('company')) {
-            $job->setCompany($this->query->get('company'));
-        }
+        $this->setEmploymentType($job, $payload['WorkStatus']);
+        $this->setOccupationalCategory($job, $payload['CategoryDisplay']);
 
         return $job;
     }
@@ -43,21 +50,70 @@ class IeeeProvider extends AbstractProvider
     public function getDefaultResponseFields()
     {
         return [
-            'title',
-            'link',
-            'description',
-            'pubDate',
+            "NormalizedJobTitle",
+            "AdId",
+            "ApplyCity",
+            "ApplyCountry",
+            "ApplyEmail",
+            "ApplyFax",
+            "ApplyName",
+            "ApplyPhone",
+            "ApplyState",
+            "ApplyUrl",
+            "ApplyZip",
+            "City",
+            "CityDisplay",
+            "ClientId",
+            "CompanyProfileDescription",
+            "CompanyId",
+            "Company",
+            "CompanyProfileUrl",
+            "CompanySize",
+            "CompanyType",
+            "Country",
+            "Description",
+            "ExpireDate",
+            "HtmlFileUri",
+            "Id",
+            "JobCode",
+            "JobSource",
+            "JobSummary",
+            "JobTitle",
+            "Latitude",
+            "Longitude",
+            "ModifiedDate",
+            "NormalizedCountry",
+            "NormalizedState",
+            "ParserId",
+            "PostDate",
+            "PostingCompany",
+            "PostingCompanyId",
+            "Requirements",
+            "ResponseMethod",
+            "SalaryMax",
+            "SalaryMin",
+            "Source",
+            "State",
+            "Zip",
+            "CompanyConfidential",
+            "Category",
+            "WorkStatus",
+            "AssignedCategory",
+            "Upgrades",
+            "MatchedCategory",
+            "CategoryDisplay",
+            "WorkType",
+            "SearchNetworks",
+            "CompanyLogo",
+            "CompanyIndustry",
+            "WorkStatusDisplay",
+            "WorkShift",
+            "RemoteDetailUrl",
+            "PaymentInterval",
+            "FormattedCityState",
+            "FormattedCityStateCountry",
+            "Url",
         ];
-    }
-
-    /**
-     * Get format
-     *
-     * @return  string Currently only 'json' and 'xml' supported
-     */
-    public function getFormat()
-    {
-        return 'xml';
     }
 
     /**
@@ -67,6 +123,22 @@ class IeeeProvider extends AbstractProvider
      */
     public function getListingsPath()
     {
-        return 'channel.item';
+        return 'Jobs';
+    }
+
+    protected function setEmploymentType(Job &$job, $typeArray = [])
+    {
+        if (is_array($typeArray) && !empty($typeArray)) {
+            $job->setEmploymentType(implode(', ', $typeArray));
+        }
+        return $job;
+    }
+
+    protected function setOccupationalCategory(Job &$job, $typeArray = [])
+    {
+        if (is_array($typeArray) && !empty($typeArray)) {
+            $job->setOccupationalCategory(implode(', ', $typeArray));
+        }
+        return $job;
     }
 }

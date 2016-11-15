@@ -2,38 +2,92 @@
 
 use JobApis\Jobs\Client\Collection;
 use JobApis\Jobs\Client\Job;
-use JobApis\Jobs\Client\Providers\JobinventoryProvider;
-use JobApis\Jobs\Client\Queries\JobinventoryQuery;
+use JobApis\Jobs\Client\Providers\IeeeProvider;
+use JobApis\Jobs\Client\Queries\IeeeQuery;
 use Mockery as m;
 
 class IeeeProviderTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->query = m::mock('JobApis\Jobs\Client\Queries\JobinventoryQuery');
+        $this->query = m::mock('JobApis\Jobs\Client\Queries\IeeeQuery');
 
-        $this->client = new JobinventoryProvider($this->query);
+        $this->client = new IeeeProvider($this->query);
     }
 
     public function testItCanGetDefaultResponseFields()
     {
         $fields = [
-            'title',
-            'link',
-            'description',
-            'pubDate',
+            "NormalizedJobTitle",
+            "AdId",
+            "ApplyCity",
+            "ApplyCountry",
+            "ApplyEmail",
+            "ApplyFax",
+            "ApplyName",
+            "ApplyPhone",
+            "ApplyState",
+            "ApplyUrl",
+            "ApplyZip",
+            "City",
+            "CityDisplay",
+            "ClientId",
+            "CompanyProfileDescription",
+            "CompanyId",
+            "Company",
+            "CompanyProfileUrl",
+            "CompanySize",
+            "CompanyType",
+            "Country",
+            "Description",
+            "ExpireDate",
+            "HtmlFileUri",
+            "Id",
+            "JobCode",
+            "JobSource",
+            "JobSummary",
+            "JobTitle",
+            "Latitude",
+            "Longitude",
+            "ModifiedDate",
+            "NormalizedCountry",
+            "NormalizedState",
+            "ParserId",
+            "PostDate",
+            "PostingCompany",
+            "PostingCompanyId",
+            "Requirements",
+            "ResponseMethod",
+            "SalaryMax",
+            "SalaryMin",
+            "Source",
+            "State",
+            "Zip",
+            "CompanyConfidential",
+            "Category",
+            "WorkStatus",
+            "AssignedCategory",
+            "Upgrades",
+            "MatchedCategory",
+            "CategoryDisplay",
+            "WorkType",
+            "SearchNetworks",
+            "CompanyLogo",
+            "CompanyIndustry",
+            "WorkStatusDisplay",
+            "WorkShift",
+            "RemoteDetailUrl",
+            "PaymentInterval",
+            "FormattedCityState",
+            "FormattedCityStateCountry",
+            "Url",
         ];
         $this->assertEquals($fields, $this->client->getDefaultResponseFields());
     }
 
     public function testItCanGetListingsPath()
     {
-        $this->assertEquals('channel.item', $this->client->getListingsPath());
-    }
-
-    public function testItCanGetFormat()
-    {
-        $this->assertEquals('xml', $this->client->getFormat());
+        $this->assertEquals('Jobs', $this->client->getListingsPath());
     }
 
     public function testItCanCreateJobObjectWhenLocationAndCompanyNotSet()
@@ -47,58 +101,10 @@ class IeeeProviderTest extends \PHPUnit_Framework_TestCase
         $results = $this->client->createJobObject($payload);
 
         $this->assertInstanceOf(Job::class, $results);
-        $this->assertEquals($payload['title'], $results->getTitle());
-        $this->assertEquals($payload['title'], $results->getName());
-        $this->assertEquals($payload['description'], $results->getDescription());
-        $this->assertEquals($payload['link'], $results->getUrl());
-    }
-
-    public function testItCanCreateJobObjectWhenLocationSet()
-    {
-        $location = uniqid();
-        $payload = $this->createJobArray();
-
-        $this->query->shouldReceive('get')
-            ->with('l')
-            ->once()
-            ->andReturn($location);
-        $this->query->shouldReceive('get')
-            ->with('company')
-            ->once()
-            ->andReturn(null);
-
-        $results = $this->client->createJobObject($payload);
-
-        $this->assertInstanceOf(Job::class, $results);
-        $this->assertEquals($payload['title'], $results->getTitle());
-        $this->assertEquals($payload['title'], $results->getName());
-        $this->assertEquals($payload['description'], $results->getDescription());
-        $this->assertEquals($payload['link'], $results->getUrl());
-        $this->assertEquals($location, $results->getLocation());
-    }
-
-    public function testItCanCreateJobObjectWhenCompanySet()
-    {
-        $company = uniqid();
-        $payload = $this->createJobArray();
-
-        $this->query->shouldReceive('get')
-            ->with('company')
-            ->once()
-            ->andReturn($company);
-        $this->query->shouldReceive('get')
-            ->with('l')
-            ->once()
-            ->andReturn(null);
-
-        $results = $this->client->createJobObject($payload);
-
-        $this->assertInstanceOf(Job::class, $results);
-        $this->assertEquals($payload['title'], $results->getTitle());
-        $this->assertEquals($payload['title'], $results->getName());
-        $this->assertEquals($payload['description'], $results->getDescription());
-        $this->assertEquals($payload['link'], $results->getUrl());
-        $this->assertEquals($company, $results->getCompany());
+        $this->assertEquals($payload['JobTitle'], $results->getTitle());
+        $this->assertEquals($payload['JobTitle'], $results->getName());
+        $this->assertEquals($payload['Description'], $results->getDescription());
+        $this->assertEquals($payload['Url'], $results->getUrl());
     }
 
     /**
@@ -107,22 +113,24 @@ class IeeeProviderTest extends \PHPUnit_Framework_TestCase
     public function testItCanGetJobs()
     {
         $options = [
-            'q' => uniqid(),
-            'l' => uniqid(),
-            't' => uniqid(),
+            'keyword' => uniqid(),
+            'location' => uniqid(),
         ];
 
         $guzzle = m::mock('GuzzleHttp\Client');
 
-        $query = new JobinventoryQuery($options);
+        $query = new IeeeQuery($options);
 
-        $client = new JobinventoryProvider($query);
+        $client = new IeeeProvider($query);
 
         $client->setClient($guzzle);
 
         $response = m::mock('GuzzleHttp\Message\Response');
 
-        $jobs = $this->createXmlResponse();
+        $jobs = [
+            0 => $this->createJobArray(),
+            1 => $this->createJobArray(),
+        ];
 
         $guzzle->shouldReceive('get')
             ->with($query->getUrl(), [])
@@ -130,7 +138,7 @@ class IeeeProviderTest extends \PHPUnit_Framework_TestCase
             ->andReturn($response);
         $response->shouldReceive('getBody')
             ->once()
-            ->andReturn($jobs);
+            ->andReturn(json_encode(['Jobs' => $jobs]));
 
         $results = $client->getJobs();
 
@@ -149,11 +157,11 @@ class IeeeProviderTest extends \PHPUnit_Framework_TestCase
 
         $keyword = 'engineering';
 
-        $query = new JobinventoryQuery([
-            'q' => $keyword,
+        $query = new IeeeQuery([
+            'keyword' => $keyword,
         ]);
 
-        $client = new JobinventoryProvider($query);
+        $client = new IeeeProvider($query);
 
         $results = $client->getJobs();
 
@@ -167,15 +175,105 @@ class IeeeProviderTest extends \PHPUnit_Framework_TestCase
     private function createJobArray()
     {
         return [
-            'title' => uniqid(),
-            'link' => uniqid(),
-            'description' => uniqid(),
-            'pubDate' => '2015-'.rand(1,12).'-'.rand(1,31).' 00:48:39',
+            'NormalizedJobTitle' => 'Assistant Professor',
+            'AdId' => '',
+            'ApplyCity' => '',
+            'ApplyCountry' => 'United States',
+            'ApplyEmail' => 'CompEngPos-group@usna.edu',
+            'ApplyFax' => '',
+            'ApplyName' => ' ',
+            'ApplyPhone' => '',
+            'ApplyState' => '',
+            'ApplyUrl' => 'https://www.usna.edu/HRO/jobinfo/ASSTPROF-CE2016.php',
+            'ApplyZip' => '',
+            'City' => 'Annapolis',
+            'CityDisplay' => 'Annapolis',
+            'ClientId' => 'ieee',
+            'CompanyProfileDescription' => '',
+            'CompanyId' => '894935',
+            'Company' => 'Electrical & Computer Engineering Department',
+            'CompanyProfileUrl' => '',
+            'CompanySize' => '',
+            'CompanyType' => '',
+            'Country' => 'United States',
+            'Description' => '<p><span style="font-size: small; font-family: arial, helvetica, sans-serif;">The Electrical and Computer Engineering Department at the United States Naval Academy is seeking applicants to fill multiple tenure-track positions at the Assistant Professor level in Computer Engineering. Applicants with teaching and research interests in all areas of computer engineering will be considered, including but not limited to </span><span style="font-size: small; font-family: arial, helvetica, sans-serif;">cyber security</span><span style="font-size: small; font-family: arial, helvetica, sans-serif;"><span style="font-family: arial, helvetica, sans-serif;">,</span> operating systems, computer networking, parallel computing, distributed systems, storage systems, embedded </span><span style="font-family: arial, helvetica, sans-serif; font-size: small;">systems, and compilers. </span></p>
+<div>
+<p><span style="font-size: small; font-family: arial, helvetica, sans-serif;">For more information about these positions and how to apply please visit the USNA position announcement at <a href="https://www.usna.edu/HRO/jobinfo/ASSTPROF-CE2016.php" target="_blank">https://www.usna.edu/HRO/jobinfo/ASSTPROF-CE2016.php</a>  </span></p>
+</div>',
+            'ExpireDate' => '2016-12-09T04:59:59Z',
+            'HtmlFileUri' => '',
+            'Id' => '90265813',
+            'JobCode' => '',
+            'JobSource' => 'direct_employer',
+            'JobSummary' => 'The Electrical and Computer Engineering Department at the United States Naval Academy is seeking applicants to fill multiple tenure-track positions at the Assistant Professor level in Computer Engineering. Applicants with teaching and research interests in all areas of computer engineering will be c...',
+            'JobTitle' => 'Assistant Professor of Computer Engineering',
+            'Latitude' => '38.9889503',
+            'Longitude' => '-76.4620928',
+            'ModifiedDate' => '2016-11-08T19:00:00Z',
+            'NormalizedCountry' => 'US',
+            'NormalizedState' => 'MD',
+            'ParserId' => '',
+            'PostDate' => '2016-11-08T19:00:00Z',
+            'PostingCompany' => '',
+            'PostingCompanyId' => '0',
+            'Requirements' => '',
+            'ResponseMethod' => 'none',
+            'SalaryMax' => '',
+            'SalaryMin' => '',
+            'Source' => '',
+            'State' => 'Maryland',
+            'Zip' => '21402',
+            'CompanyConfidential' => '',
+            'Category' =>
+                array (
+                    0 => 'computer_programming_systems',
+                    1 => 'school_admin',
+                    2 => 'computer_engineering',
+                ),
+            'WorkStatus' =>
+                array (
+                    0 => 'full_time',
+                ),
+            'AssignedCategory' =>
+                array (
+                    0 => 'computer_programming_systems',
+                    1 => 'school_admin',
+                    2 => 'computer_engineering',
+                ),
+            'Upgrades' =>
+                array (
+                    0 => '',
+                ),
+            'MatchedCategory' =>
+                array (
+                    0 => 'information_technology',
+                    1 => 'education_training',
+                ),
+            'CategoryDisplay' =>
+                array (
+                    0 => 'Computer Programming/Systems',
+                    1 => 'Faculty',
+                    2 => 'Computer Engineering',
+                    3 => 'Information Technology',
+                    4 => 'Education',
+                ),
+            'WorkType' =>
+                array (
+                    0 => 'employee',
+                ),
+            'SearchNetworks' => '',
+            'CompanyLogo' => '',
+            'CompanyIndustry' => '',
+            'WorkStatusDisplay' =>
+                array (
+                    0 => 'Full Time',
+                ),
+            'WorkShift' => '',
+            'RemoteDetailUrl' => '',
+            'PaymentInterval' => '',
+            'FormattedCityState' => 'Annapolis, MD',
+            'FormattedCityStateCountry' => 'Annapolis, MD US',
+            'Url' => 'http://jobs.ieee.org/jobs/assistant-professor-of-computer-engineering-annapolis-maryland-21402-90265813-d?widget=1&type=job&',
         ];
-    }
-
-    private function createXmlResponse()
-    {
-        return "<?xml version='1.0' encoding='UTF-8' ?><rss version='2.0'><channel><title>Hotel Jobs in Chicago, IL // JobInventory.com</title><item><title>Hotel Specialist Agents</title><link>http://www.jobinventory.com/d/Hotel-Specialist-Agents-Jobs-Chicago-IL-1391153840.html</link><description>Full-time/Regular 9:00 AM to 6:00 PM. 40 hours per week. (Overtime as required) The <b>hotel</b> ... Specialist Agents would pre pay all <b>hotel</b> rooms and help support the reservations team. JOB OVERVIEW work</description><pubDate>2015-04-11 00:48:39</pubDate></item><item><title>Maintenance_Hourly1</title><link>http://www.jobinventory.com/d/Maintenance_hourly1-Jobs-Chicago-IL-1583775509.html</link><description>Data not provided</description><pubDate>2016-05-17 18:13:26</pubDate></item></channel></rss>";
     }
 }
