@@ -3,133 +3,129 @@
 class IeeeQuery extends AbstractQuery
 {
     /**
-     * q
+     * keyword
      *
-     * The search query.
+     * The search string.
      *
      * @var string
      */
-    protected $q;
+    protected $keyword;
 
     /**
-     * l
+     * location
      *
      * The search location.
      *
      * @var string
      */
-    protected $l;
+    protected $location;
 
     /**
-     * limit
+     * rows
      *
-     * Number of results per page
+     * Results per page. Should be one of the following:
+     * - 15
+     * - 25
+     * - 50
      *
      * @var integer
      */
-    protected $limit;
+    protected $rows;
 
     /**
-     * p
-     *
-     * Page
+     * page
      *
      * @var integer
      */
-    protected $p;
+    protected $page;
 
     /**
      * radius
      *
-     * Miles away to search
+     * Miles away to search (up to 150).
      *
      * @var integer
      */
     protected $radius;
 
     /**
-     * t
+     * kwsJobTitleOnly
      *
-     * Job title.
+     * Search keywords apply to job title only.
+     *
+     * @var boolean
+     */
+    protected $kwsJobTitleOnly;
+
+    /**
+     * category
+     *
+     * Array of categories to search (eg: `category[0]=computer_engineering`).
+     *
+     * @var array
+     */
+    protected $category;
+
+    /**
+     * sort
+     *
+     * Order and order by fields combined (eg: `sort=score+desc`).
      *
      * @var string
      */
-    protected $t;
+    protected $sort;
 
     /**
-     * company
-     *
-     * @var string
-     */
-    protected $company;
-
-    /**
-     * date
-     *
-     * Number of days back to search.
-     *
-     * @var integer
-     */
-    protected $date;
-
-    /**
-     * jobtype
+     * region
      *
      * Valid options include:
-     *  Full-time
-     *  Contract
-     *  Part-time
-     *  Temporary
-     *  Seasonal
+     *  us_central
+     *  us_e
+     *  us_ne
+     *  us_se
+     *  us_sw
+     *  us_w
+     *  africa
+     *  australia_and_oceania
+     *  ca
+     *  europe_e
+     *  europe_w
+     *  asia_e_and_se
+     *  europe
+     *  latin_america
+     *  middle_e
+     *  asia_sc
      *
      * @var string
      */
-    protected $jobtype;
+    protected $region;
 
     /**
-     */
-
-    /**
-     * education
+     * SearchNetworks
      *
-     * Valid options include:
-     *  Professional
-     *  High School
-     *  Doctorate
-     *  Associate's Degree
-     *  Some College
-     *  Bachelor's Degree
+     * Networks to search (eg: `US`).
      *
      * @var string
      */
-    protected $education;
+    protected $SearchNetworks;
 
     /**
-     * c
+     * networkView
      *
-     * Category (see website for options).
+     * Network view (eg: `national`)
      *
      * @var string
      */
-    protected $c;
+    protected $networkView;
 
     /**
-     * o
+     * format
      *
-     * Job source (see website for options).
+     * Format of results. Should default to `json`.
      *
      * @var string
      */
-    protected $o;
-
-    /**
-     * experience
-     *
-     * Experience required (see website for options).
-     *
-     * @var string
-     */
-    protected $experience;
+    protected $format;
 
     /**
      * Get baseUrl
@@ -138,7 +134,7 @@ class IeeeQuery extends AbstractQuery
      */
     public function getBaseUrl()
     {
-        return 'http://www.jobinventory.com/rss';
+        return 'http://jobs.ieee.org/jobs/results';
     }
 
     /**
@@ -148,7 +144,41 @@ class IeeeQuery extends AbstractQuery
      */
     public function getKeyword()
     {
-        return $this->q;
+        return $this->keyword;
+    }
+
+    /**
+     * Get url
+     *
+     * @return  string
+     */
+    public function getUrl()
+    {
+        return $this->getBaseUrl().'/keyword/'.$this->keyword.$this->getQueryString();
+    }
+
+    /**
+     * Gets the attributes to use for this API's query
+     *
+     * @var array
+     */
+    protected function getQueryAttributes()
+    {
+        $attributes = get_object_vars($this);
+        unset($attributes['keyword']);
+        return $attributes;
+    }
+
+    /**
+     * Required parameters
+     *
+     * @return array
+     */
+    protected function defaultAttributes()
+    {
+        return [
+            'format' => 'json',
+        ];
     }
 
     /**
@@ -159,7 +189,8 @@ class IeeeQuery extends AbstractQuery
     protected function requiredAttributes()
     {
         return [
-            'q',
+            'keyword',
+            'format',
         ];
     }
 }

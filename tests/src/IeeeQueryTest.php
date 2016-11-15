@@ -1,19 +1,19 @@
 <?php namespace JobApis\Jobs\Client\Test;
 
-use JobApis\Jobs\Client\Queries\JobinventoryQuery;
+use JobApis\Jobs\Client\Queries\IeeeQuery;
 use Mockery as m;
 
 class IeeeQueryTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->query = new JobinventoryQuery();
+        $this->query = new IeeeQuery();
     }
 
     public function testItCanGetBaseUrl()
     {
         $this->assertEquals(
-            'http://www.jobinventory.com/rss',
+            'http://jobs.ieee.org/jobs/results',
             $this->query->getBaseUrl()
         );
     }
@@ -21,7 +21,7 @@ class IeeeQueryTest extends \PHPUnit_Framework_TestCase
     public function testItCanGetKeyword()
     {
         $keyword = uniqid();
-        $this->query->set('q', $keyword);
+        $this->query->set('keyword', $keyword);
         $this->assertEquals($keyword, $this->query->getKeyword());
     }
 
@@ -32,20 +32,20 @@ class IeeeQueryTest extends \PHPUnit_Framework_TestCase
 
     public function testItReturnsTrueIfRequiredAttributesPresent()
     {
-        $this->query->set('q', uniqid());
+        $this->query->set('keyword', uniqid());
 
         $this->assertTrue($this->query->isValid());
     }
 
     public function testItCanAddAttributesToUrl()
     {
-        $this->query->set('q', uniqid());
-        $this->query->set('l', uniqid());
+        $this->query->set('keyword', uniqid());
+        $this->query->set('location', uniqid());
 
         $url = $this->query->getUrl();
 
-        $this->assertContains('q=', $url);
-        $this->assertContains('l=', $url);
+        $this->assertContains('keyword/', $url);
+        $this->assertContains('location=', $url);
     }
 
     /**
@@ -67,8 +67,8 @@ class IeeeQueryTest extends \PHPUnit_Framework_TestCase
     public function testItSetsAndGetsValidAttributes()
     {
         $attributes = [
-            'q' => uniqid(),
-            'l' => uniqid(),
+            'keyword' => uniqid(),
+            'location' => uniqid(),
             'radius' => rand(1,100),
         ];
 
