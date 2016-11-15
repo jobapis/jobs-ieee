@@ -6,7 +6,7 @@ use JobApis\Jobs\Client\Providers\JobinventoryProvider;
 use JobApis\Jobs\Client\Queries\JobinventoryQuery;
 use Mockery as m;
 
-class JobinventoryProviderTest extends \PHPUnit_Framework_TestCase
+class IeeeProviderTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {

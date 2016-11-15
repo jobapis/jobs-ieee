@@ -1,6 +1,6 @@
 <?php namespace JobApis\Jobs\Client\Queries;
 
-class JobinventoryQuery extends AbstractQuery
+class IeeeQuery extends AbstractQuery
 {
     /**
      * q

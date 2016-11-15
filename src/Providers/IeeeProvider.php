@@ -2,7 +2,7 @@
 
 use JobApis\Jobs\Client\Job;
 
-class JobinventoryProvider extends AbstractProvider
+class IeeeProvider extends AbstractProvider
 {
     /**
      * Returns the standardized job object
